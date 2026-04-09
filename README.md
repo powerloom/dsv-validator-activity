@@ -8,7 +8,7 @@ Exports on-chain validator activity from Powerloom L2 using **`DataMarket`** `Da
 
 | File | Used for |
 |------|----------|
-| **`abi/DataMarket.abi.json`** | **DataMarket** — `deploymentBlockNumber()` and **`DayStartedEvent`** (day boundary discovery). Logs are fetched **from the data market address** (`DATA_MARKET_CONTRACT`), not from ProtocolState. |
+| **`abi/DataMarket.abi.json`** | **DataMarket** — **`DayStartedEvent`** for day boundary discovery (L2 `eth_getLogs`). `deploymentBlockNumber()` is stored for reference only — on Arbitrum Nitro it is **not** an L2 block (see `deployment_block_number_note` in `addresses_resolved.json`). |
 | **`abi/PowerloomProtocolState.abi.json`** | **ProtocolState** — `SnapshotBatchSubmitted`, `BatchSubmissionsCompleted`, and `validatorPriorityAssigner()` / `validatorState()` calls. (ProtocolState may also emit a mirror `DayStartedEvent` in some code paths; this tool does not rely on that.) |
 | **`abi/ValidatorPriorityAssigner.abi.json`** | **ValidatorPriorityAssigner (VPA)** — `PrioritiesAssigned` logs. Same format: one JSON array. |
 
@@ -22,6 +22,7 @@ Exports on-chain validator activity from Powerloom L2 using **`DataMarket`** `Da
 | `PROTOCOL_STATE_CONTRACT` | Defaults to `0x1d0e010Ff11b781CA1dE34BD25a0037203e25E2a` (see `localenvs/dsv-mainnet`). |
 | `DATA_MARKET_CONTRACT` | Defaults to `0x26c44e5CcEB7Fe69Cffc933838CF40286b2dc01a`. |
 | `CHAIN_ID` | Optional; if set, compared to `eth_chainId` (sanity check). |
+| `DISCOVERY_FROM_BLOCK` | Optional L2 block to begin **`DayStartedEvent`** log scan (default **`1`**). **Do not** set this from `DataMarket.deploymentBlockNumber()` — on **Arbitrum Nitro** that value follows Solidity `block.number` (parent-chain style) and is **not** the same coordinate system as `eth_blockNumber` / `eth_getLogs`. CLI: `--discovery-from-block N` overrides the env. |
 
 ## Usage
 
@@ -118,6 +119,6 @@ If the process dies, **`--resume`** continues from the last completed chunk (dis
 
 ## Notes
 
-- Day 1 lower bound uses `deploymentBlockNumber()` on the Data Market if no **DataMarket** `DayStartedEvent` for day 1 exists.
+- Day 1 lower bound uses **L2 block 1** if there is no **`DayStartedEvent` with `dayId=1`**. `deploymentBlockNumber()` on the contract is **not** used for L2 bounds (it tracks parent-chain `block.number` on Arbitrum Nitro, unlike RPC block tags).
 - Day 30 upper bound uses `blockStart(31)-1` when a day-31 `DayStartedEvent` exists; otherwise the latest L2 block at run time.
 - Run under **`tmux`**, **`screen`**, or **`nohup`** on a stable host; keep RPC timeouts generous (script uses 180s HTTP timeout).
