@@ -2,12 +2,16 @@
 
 Exports on-chain validator activity from Powerloom L2 using `DayStartedEvent` block boundaries (see workspace plan).
 
-**Self-contained:** This directory is enough to run the tool: `export_validator_activity.py`, `requirements.txt`, and **`abi/`** (vendored contract ABIs). No dependency on `decentralized-sequencer/` or a fixed monorepo path. Copy the whole `dsv-validator-activity/` folder elsewhere (Docker, another machine) and run with `pip install -r requirements.txt` plus `POWERLOOM_RPC_URL`. To refresh ABIs from the sequencer repo when interfaces change:
+**Self-contained:** This directory is enough to run the tool: `export_validator_activity.py`, `requirements.txt`, and **`abi/`** with normal **JSON ABI files** (a single JSON **array** of ABI entries — the same shape `web3.eth.contract(..., abi=...)` expects). No dependency on `decentralized-sequencer/` or a fixed monorepo path. Copy the whole `dsv-validator-activity/` folder elsewhere and run with `pip install -r requirements.txt` plus `POWERLOOM_RPC_URL`.
 
-```bash
-cp ../decentralized-sequencer/abi/PowerloomProtocolState.abi.json abi/
-cp ../decentralized-sequencer/abi/ValidatorPriorityAssigner.json abi/
-```
+### `abi/` JSON files (both are plain ABI arrays)
+
+| File | Used for |
+|------|----------|
+| **`abi/PowerloomProtocolState.abi.json`** | **ProtocolState** — `DayStartedEvent`, `SnapshotBatchSubmitted`, `BatchSubmissionsCompleted`, and `validatorPriorityAssigner()` / `validatorState()` calls. This was already checked in as a normal array (not a Hardhat artifact wrapper). |
+| **`abi/ValidatorPriorityAssigner.abi.json`** | **ValidatorPriorityAssigner (VPA)** — `PrioritiesAssigned` logs. Same format: one JSON array. |
+
+**Not separate files:** **Data Market** (`deploymentBlockNumber` only) and **ValidatorState** (`signerToNodeId` only) use **minimal ABIs defined inline** in `export_validator_activity.py` — only those two functions are needed, so there is no third/fourth JSON file unless you choose to add full contract ABIs later.
 
 ## Environment
 

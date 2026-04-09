@@ -28,7 +28,7 @@ except ImportError:
 # Self-contained: ABIs live next to this script under ./abi/
 _PACKAGE_DIR = Path(__file__).resolve().parent
 _DEFAULT_PROTOCOL_ABI = _PACKAGE_DIR / "abi" / "PowerloomProtocolState.abi.json"
-_DEFAULT_VPA_ABI = _PACKAGE_DIR / "abi" / "ValidatorPriorityAssigner.json"
+_DEFAULT_VPA_ABI = _PACKAGE_DIR / "abi" / "ValidatorPriorityAssigner.abi.json"
 
 DEFAULT_PROTOCOL_STATE = "0x1d0e010Ff11b781CA1dE34BD25a0037203e25E2a"
 DEFAULT_DATA_MARKET = "0x26c44e5CcEB7Fe69Cffc933838CF40286b2dc01a"
@@ -65,10 +65,10 @@ STATE_FILENAME = "export_state.json"
 PROGRESS_FILENAME = "progress.json"
 
 
-def _load_json(path: Path) -> list | dict:
+def _load_json(path: Path) -> Any:
     if not path.is_file():
         raise FileNotFoundError(
-            f"Missing ABI file: {path}. Copy abi/ with this script or reinstall the tool package."
+            f"Missing file: {path}. Keep abi/ next to this script when copying the tool."
         )
     with open(path, encoding="utf-8") as f:
         return json.load(f)
