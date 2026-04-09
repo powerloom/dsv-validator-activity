@@ -25,10 +25,10 @@ except ImportError:
     print("Install dependencies: pip install -r requirements.txt", file=sys.stderr)
     sys.exit(1)
 
-# Repo-relative ABI paths (workspace root = parent of scripts/)
-_WORKSPACE_ROOT = Path(__file__).resolve().parent.parent.parent
-_DEFAULT_PROTOCOL_ABI = _WORKSPACE_ROOT / "decentralized-sequencer/abi/PowerloomProtocolState.abi.json"
-_DEFAULT_VPA_ABI = _WORKSPACE_ROOT / "decentralized-sequencer/abi/ValidatorPriorityAssigner.json"
+# Self-contained: ABIs live next to this script under ./abi/
+_PACKAGE_DIR = Path(__file__).resolve().parent
+_DEFAULT_PROTOCOL_ABI = _PACKAGE_DIR / "abi" / "PowerloomProtocolState.abi.json"
+_DEFAULT_VPA_ABI = _PACKAGE_DIR / "abi" / "ValidatorPriorityAssigner.json"
 
 DEFAULT_PROTOCOL_STATE = "0x1d0e010Ff11b781CA1dE34BD25a0037203e25E2a"
 DEFAULT_DATA_MARKET = "0x26c44e5CcEB7Fe69Cffc933838CF40286b2dc01a"
@@ -66,6 +66,10 @@ PROGRESS_FILENAME = "progress.json"
 
 
 def _load_json(path: Path) -> list | dict:
+    if not path.is_file():
+        raise FileNotFoundError(
+            f"Missing ABI file: {path}. Copy abi/ with this script or reinstall the tool package."
+        )
     with open(path, encoding="utf-8") as f:
         return json.load(f)
 

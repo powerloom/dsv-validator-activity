@@ -2,6 +2,13 @@
 
 Exports on-chain validator activity from Powerloom L2 using `DayStartedEvent` block boundaries (see workspace plan).
 
+**Self-contained:** This directory is enough to run the tool: `export_validator_activity.py`, `requirements.txt`, and **`abi/`** (vendored contract ABIs). No dependency on `decentralized-sequencer/` or a fixed monorepo path. Copy the whole `dsv-validator-activity/` folder elsewhere (Docker, another machine) and run with `pip install -r requirements.txt` plus `POWERLOOM_RPC_URL`. To refresh ABIs from the sequencer repo when interfaces change:
+
+```bash
+cp ../decentralized-sequencer/abi/PowerloomProtocolState.abi.json abi/
+cp ../decentralized-sequencer/abi/ValidatorPriorityAssigner.json abi/
+```
+
 ## Environment
 
 | Variable | Description |
