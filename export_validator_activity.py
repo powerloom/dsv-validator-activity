@@ -25,6 +25,32 @@ except ImportError:
     print("Install dependencies: pip install -r requirements.txt", file=sys.stderr)
     sys.exit(1)
 
+
+def _contract_event_get_logs(
+    event: Any,
+    from_block: int,
+    to_block: int,
+    argument_filters: dict[str, Any] | None = None,
+) -> list[Any]:
+    """web3 6.x uses fromBlock/toBlock; web3 7+ uses from_block/to_block for get_logs."""
+    try:
+        return list(
+            event.get_logs(
+                argument_filters=argument_filters,
+                from_block=from_block,
+                to_block=to_block,
+            )
+        )
+    except TypeError:
+        return list(
+            event.get_logs(
+                argument_filters=argument_filters,
+                fromBlock=from_block,
+                toBlock=to_block,
+            )
+        )
+
+
 # Self-contained: ABIs live next to this script under ./abi/
 _PACKAGE_DIR = Path(__file__).resolve().parent
 _DEFAULT_PROTOCOL_ABI = _PACKAGE_DIR / "abi" / "PowerloomProtocolState.abi.json"
@@ -395,9 +421,10 @@ def main() -> None:
         fb = start_fb
         while fb <= scan_to:
             tb = min(fb + chunk - 1, scan_to)
-            entries = dm_contract.events.DayStartedEvent.get_logs(
-                from_block=fb,
-                to_block=tb,
+            entries = _contract_event_get_logs(
+                dm_contract.events.DayStartedEvent,
+                fb,
+                tb,
             )
             for entry in entries:
                 args = entry["args"]
@@ -551,10 +578,11 @@ def main() -> None:
         "PrioritiesAssigned (VPA)",
         "priorities",
         "logs_priorities_assigned.jsonl",
-        lambda fb, tb: vpa.events.PrioritiesAssigned.get_logs(
-            from_block=fb,
-            to_block=tb,
-            argument_filters={"dataMarket": data_market},
+        lambda fb, tb: _contract_event_get_logs(
+            vpa.events.PrioritiesAssigned,
+            fb,
+            tb,
+            {"dataMarket": data_market},
         ),
         lambda log, iv: (
             lambda a, bn: {
@@ -576,10 +604,11 @@ def main() -> None:
         "SnapshotBatchSubmitted",
         "snapshot_submitted",
         "logs_snapshot_batch_submitted.jsonl",
-        lambda fb, tb: protocol.events.SnapshotBatchSubmitted.get_logs(
-            from_block=fb,
-            to_block=tb,
-            argument_filters={"dataMarketAddress": data_market},
+        lambda fb, tb: _contract_event_get_logs(
+            protocol.events.SnapshotBatchSubmitted,
+            fb,
+            tb,
+            {"dataMarketAddress": data_market},
         ),
         lambda log, iv: (
             lambda a, bn: {
@@ -600,10 +629,11 @@ def main() -> None:
         "BatchSubmissionsCompleted",
         "batch_completed",
         "logs_batch_submissions_completed.jsonl",
-        lambda fb, tb: protocol.events.BatchSubmissionsCompleted.get_logs(
-            from_block=fb,
-            to_block=tb,
-            argument_filters={"dataMarketAddress": data_market},
+        lambda fb, tb: _contract_event_get_logs(
+            protocol.events.BatchSubmissionsCompleted,
+            fb,
+            tb,
+            {"dataMarketAddress": data_market},
         ),
         lambda log, iv: (
             lambda a, bn: {

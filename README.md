@@ -4,6 +4,8 @@ Exports on-chain validator activity from Powerloom L2 using **`DataMarket`** `Da
 
 **Self-contained:** This directory is enough to run the tool: `export_validator_activity.py`, `requirements.txt`, and **`abi/`** with normal **JSON ABI files** (a single JSON **array** of ABI entries — the same shape `web3.eth.contract(..., abi=...)` expects). No dependency on `decentralized-sequencer/` or a fixed monorepo path. Copy the whole `dsv-validator-activity/` folder elsewhere and run with `pip install -r requirements.txt` plus `POWERLOOM_RPC_URL`.
 
+**web3.py:** `requirements.txt` allows **web3 6.x or 7.x**. Event `get_logs` uses different keyword names between versions; the script wraps both (`from_block` vs `fromBlock`).
+
 ### `abi/` JSON files (all are plain ABI arrays)
 
 | File | Used for |
