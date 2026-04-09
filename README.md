@@ -1,17 +1,18 @@
 # DSV mainnet: validator activity export (days 1–30)
 
-Exports on-chain validator activity from Powerloom L2 using `DayStartedEvent` block boundaries (see workspace plan).
+Exports on-chain validator activity from Powerloom L2 using **`DataMarket`** `DayStartedEvent` block boundaries (see workspace plan). Day discovery does **not** use `ProtocolState` for `DayStartedEvent` — the canonical emit for epoch/day advances is on the **data market** contract (watchers and on-chain reward flows index that address).
 
 **Self-contained:** This directory is enough to run the tool: `export_validator_activity.py`, `requirements.txt`, and **`abi/`** with normal **JSON ABI files** (a single JSON **array** of ABI entries — the same shape `web3.eth.contract(..., abi=...)` expects). No dependency on `decentralized-sequencer/` or a fixed monorepo path. Copy the whole `dsv-validator-activity/` folder elsewhere and run with `pip install -r requirements.txt` plus `POWERLOOM_RPC_URL`.
 
-### `abi/` JSON files (both are plain ABI arrays)
+### `abi/` JSON files (all are plain ABI arrays)
 
 | File | Used for |
 |------|----------|
-| **`abi/PowerloomProtocolState.abi.json`** | **ProtocolState** — `DayStartedEvent`, `SnapshotBatchSubmitted`, `BatchSubmissionsCompleted`, and `validatorPriorityAssigner()` / `validatorState()` calls. This was already checked in as a normal array (not a Hardhat artifact wrapper). |
+| **`abi/DataMarket.abi.json`** | **DataMarket** — `deploymentBlockNumber()` and **`DayStartedEvent`** (day boundary discovery). Logs are fetched **from the data market address** (`DATA_MARKET_CONTRACT`), not from ProtocolState. |
+| **`abi/PowerloomProtocolState.abi.json`** | **ProtocolState** — `SnapshotBatchSubmitted`, `BatchSubmissionsCompleted`, and `validatorPriorityAssigner()` / `validatorState()` calls. (ProtocolState may also emit a mirror `DayStartedEvent` in some code paths; this tool does not rely on that.) |
 | **`abi/ValidatorPriorityAssigner.abi.json`** | **ValidatorPriorityAssigner (VPA)** — `PrioritiesAssigned` logs. Same format: one JSON array. |
 
-**Not separate files:** **Data Market** (`deploymentBlockNumber` only) and **ValidatorState** (`signerToNodeId` only) use **minimal ABIs defined inline** in `export_validator_activity.py` — only those two functions are needed, so there is no third/fourth JSON file unless you choose to add full contract ABIs later.
+**Inline only:** **ValidatorState** (`signerToNodeId`) uses a **minimal ABI** in `export_validator_activity.py` — only that function is needed.
 
 ## Environment
 
@@ -48,7 +49,7 @@ All artifacts are written under **`--out`** (default `./out`). See [Output files
 | File | Format | Contents |
 |------|--------|----------|
 | **`addresses_resolved.json`** | JSON | `chain_id`, `protocol_state`, `data_market`, `validator_priority_assigner`, `validator_state`, `deployment_block_number`. Use for reproducibility and verifying you scanned the intended deployment. |
-| **`day_boundaries.json`** | JSON | `day_started_event_first_block_by_day`: first L2 block seen per `dayId` from `DayStartedEvent`. `intervals_inclusive_days_1_30`: for each protocol **day 1–30**, inclusive **`block_start`** and **`block_end`** on Powerloom L2. Days follow **`DayStartedEvent`** boundaries (not fixed epoch counts per day). |
+| **`day_boundaries.json`** | JSON | `day_started_event_first_block_by_day`: first L2 block seen per `dayId` from **DataMarket** `DayStartedEvent`. `intervals_inclusive_days_1_30`: for each protocol **day 1–30**, inclusive **`block_start`** and **`block_end`** on Powerloom L2. Days follow those boundaries (not fixed epoch counts per day). |
 | **`metrics_by_signer_day.csv`** | CSV | **Main table for manual reward spreadsheets.** Columns: **`signer`**, **`node_id`** (from `ValidatorState.signerToNodeId`), **`day_id`**, **`snapshot_batch_submitted`**, **`batch_submissions_completed`**. One row per distinct **(signer, day_id)** with activity. |
 | **`metrics_summary.json`** | JSON | `priorities_assigned_logs_per_day` (counts of VPA `PrioritiesAssigned` logs per day), `unique_signers_observed`, `totals` for the three submission-related log types. Sanity check against JSONL line counts. |
 
@@ -73,7 +74,7 @@ All artifacts are written under **`--out`** (default `./out`). See [Output files
 
 - **`signer_from`**: Address that sent the transaction (`eth_getTransaction.from`). For these flows it is the **authorized signer** for validator submissions as enforced by **`ValidatorPriorityAssigner.canValidatorSubmit`** and **`ValidatorState.signerToNodeId`**.
 - **`node_id`**: Output of **`signerToNodeId(signer)`** on the resolved ValidatorState contract — links the signing key to a **validator node** for operator-level reporting.
-- **`day_id`**: Protocol **data market day** (1–30), assigned by **L2 block number** falling in the inclusive range for that day from **`day_boundaries.json`**. Handles irregular epoch counts (e.g. short day 1, `forceSkipEpoch` windows).
+- **`day_id`**: Protocol **data market day** (1–30), assigned by **L2 block number** falling in the inclusive range for that day from **`day_boundaries.json`** (built from **DataMarket** `DayStartedEvent`). Handles irregular epoch counts (e.g. short day 1, `forceSkipEpoch` windows).
 
 ### What this export does *not* include
 
@@ -117,6 +118,6 @@ If the process dies, **`--resume`** continues from the last completed chunk (dis
 
 ## Notes
 
-- Day 1 lower bound uses `deploymentBlockNumber()` on the Data Market if no `DayStartedEvent` for day 1 exists.
+- Day 1 lower bound uses `deploymentBlockNumber()` on the Data Market if no **DataMarket** `DayStartedEvent` for day 1 exists.
 - Day 30 upper bound uses `blockStart(31)-1` when a day-31 `DayStartedEvent` exists; otherwise the latest L2 block at run time.
 - Run under **`tmux`**, **`screen`**, or **`nohup`** on a stable host; keep RPC timeouts generous (script uses 180s HTTP timeout).

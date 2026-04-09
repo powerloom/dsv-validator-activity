@@ -29,6 +29,7 @@ except ImportError:
 _PACKAGE_DIR = Path(__file__).resolve().parent
 _DEFAULT_PROTOCOL_ABI = _PACKAGE_DIR / "abi" / "PowerloomProtocolState.abi.json"
 _DEFAULT_VPA_ABI = _PACKAGE_DIR / "abi" / "ValidatorPriorityAssigner.abi.json"
+_DEFAULT_DM_ABI = _PACKAGE_DIR / "abi" / "DataMarket.abi.json"
 
 DEFAULT_PROTOCOL_STATE = "0x1d0e010Ff11b781CA1dE34BD25a0037203e25E2a"
 DEFAULT_DATA_MARKET = "0x26c44e5CcEB7Fe69Cffc933838CF40286b2dc01a"
@@ -40,16 +41,6 @@ STATE_VERSION = 1
 PROGRESS_EVERY_CHUNKS = 5
 TX_CHECKPOINT_EVERY = 500
 SIGNER_CHECKPOINT_EVERY = 50
-
-_DATA_MARKET_ABI = [
-    {
-        "inputs": [],
-        "name": "deploymentBlockNumber",
-        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-        "stateMutability": "view",
-        "type": "function",
-    }
-]
 
 _VALIDATOR_STATE_ABI = [
     {
@@ -98,8 +89,8 @@ def _build_day_intervals(
     missing = [d for d in range(2, DAY_END + 1) if d not in block_start]
     if missing:
         raise SystemExit(
-            f"Missing DayStartedEvent for dayId(s): {missing}. "
-            "Cannot bound days without these (or narrow RPC block range)."
+            f"Missing DataMarket DayStartedEvent for dayId(s): {missing}. "
+            "Cannot bound days — check DATA_MARKET_CONTRACT, archive RPC, or incomplete discovery scan."
         )
 
     intervals: dict[int, tuple[int, int]] = {}
@@ -307,7 +298,8 @@ def main() -> None:
     vpa_addr = w3.to_checksum_address(vpa_addr)
     vs_addr = w3.to_checksum_address(vs_addr)
 
-    dm_contract = w3.eth.contract(address=data_market, abi=_DATA_MARKET_ABI)
+    dm_abi = _load_json(_DEFAULT_DM_ABI)
+    dm_contract = w3.eth.contract(address=data_market, abi=dm_abi)
     deployment_block = int(dm_contract.functions.deploymentBlockNumber().call())
 
     vpa_abi = _load_json(_DEFAULT_VPA_ABI)
@@ -349,8 +341,16 @@ def main() -> None:
         print(f"Resuming from phase={state.get('phase')} checkpoint")
 
     latest = int(w3.eth.block_number)
+    if deployment_block > latest:
+        raise SystemExit(
+            f"DataMarket.deploymentBlockNumber()={deployment_block} > eth_blockNumber={latest}. "
+            "Wrong POWERLOOM_RPC_URL / chain, or wrong DATA_MARKET_CONTRACT."
+        )
 
-    # --- Phase: discover DayStarted (checkpointed) ---
+    # --- Phase: discover DayStarted on DataMarket (checkpointed) ---
+    # Canonical emit: DataMarket.sol — DayStartedEvent(uint256 dayId, uint256 timestamp).
+    # ProtocolState also emits a mirror when releaseEpoch/forceSkipEpoch go through it; watcher
+    # tooling often indexes the DataMarket address — use the same source here.
     day_started_blocks: dict[int, int] = {}
     discover_key = "discover_day_started"
     dstate = state.get(discover_key, {}) if state else {}
@@ -363,15 +363,22 @@ def main() -> None:
         start_fb = int(dstate.get("last_scanned_block", deployment_block - 1)) + 1
         if start_fb > deployment_block:
             day_started_blocks = {int(k): int(v) for k, v in dstate.get("day_started_first_block", {}).items()}
-        prog = ProgressReporter(out_dir, "discover_DayStartedEvent", start_fb, scan_to)
-        print(f"DayStarted discovery: blocks {start_fb}..{scan_to} (may be millions of blocks; checkpointed)")
+        if start_fb > scan_to:
+            raise SystemExit(
+                f"Invalid discovery range: start_block={start_fb} > end_block={scan_to}. "
+                "Checkpoint may be from another chain — run with --fresh, or fix RPC / addresses."
+            )
+        prog = ProgressReporter(out_dir, "discover_DataMarket_DayStartedEvent", start_fb, scan_to)
+        print(
+            f"DayStarted discovery (DataMarket {data_market}): blocks {start_fb}..{scan_to} "
+            "(may be millions of blocks; checkpointed)"
+        )
         fb = start_fb
         while fb <= scan_to:
             tb = min(fb + chunk - 1, scan_to)
-            entries = protocol.events.DayStartedEvent.get_logs(
+            entries = dm_contract.events.DayStartedEvent.get_logs(
                 from_block=fb,
                 to_block=tb,
-                argument_filters={"dataMarketAddress": data_market},
             )
             for entry in entries:
                 args = entry["args"]
@@ -429,7 +436,7 @@ def main() -> None:
         {
             "day_started_event_first_block_by_day": {str(k): v for k, v in sorted(day_started_blocks.items())},
             "intervals_inclusive_days_1_30": boundaries,
-            "note": "Day 1 start uses DayStartedEvent(dayId=1) if present, else deploymentBlockNumber.",
+            "note": "Day boundaries from DataMarket DayStartedEvent(uint256 dayId,...). Day 1 uses event dayId=1 if present, else deploymentBlockNumber.",
         },
     )
 
