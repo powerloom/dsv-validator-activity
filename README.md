@@ -13,6 +13,7 @@ Exports on-chain validator activity from Powerloom L2 using **`DataMarket`** `Da
 | **`abi/DataMarket.abi.json`** | **DataMarket** — **`DayStartedEvent`** for day boundary discovery (L2 `eth_getLogs`). `deploymentBlockNumber()` is stored for reference only — on Arbitrum Nitro it is **not** an L2 block (see `deployment_block_number_note` in `addresses_resolved.json`). |
 | **`abi/PowerloomProtocolState.abi.json`** | **ProtocolState** — `SnapshotBatchSubmitted`, `BatchSubmissionsCompleted`, and `validatorPriorityAssigner()` / `validatorState()` calls. (ProtocolState may also emit a mirror `DayStartedEvent` in some code paths; this tool does not rely on that.) |
 | **`abi/ValidatorPriorityAssigner.abi.json`** | **ValidatorPriorityAssigner (VPA)** — `PrioritiesAssigned` logs. Same format: one JSON array. |
+| **`abi/PowerloomValidatorState.abi.json`** | **ValidatorState** — `nodeIdToOwner(uint256)` for reward owner resolution in `build_rewards.py`. |
 
 **Inline only:** **ValidatorState** (`signerToNodeId`) uses a **minimal ABI** in `export_validator_activity.py` — only that function is needed.
 
@@ -23,6 +24,7 @@ Exports on-chain validator activity from Powerloom L2 using **`DataMarket`** `Da
 | `POWERLOOM_RPC_URL` | **Required.** Archive-capable JSON-RPC for Powerloom mainnet (Arbitrum Nitro L2). |
 | `PROTOCOL_STATE_CONTRACT` | Defaults to `0x1d0e010Ff11b781CA1dE34BD25a0037203e25E2a` (see `localenvs/dsv-mainnet`). |
 | `DATA_MARKET_CONTRACT` | Defaults to `0x26c44e5CcEB7Fe69Cffc933838CF40286b2dc01a`. |
+| `VALIDATOR_STATE_CONTRACT` | Defaults to `0x85573B2CF313315364FB4332f8eabc55321F201A`. Used by `build_rewards.py` to resolve `nodeIdToOwner(uint256)`. |
 | `CHAIN_ID` | Optional; if set, compared to `eth_chainId` (sanity check). |
 | `DISCOVERY_FROM_BLOCK` | Optional L2 block to begin **`DayStartedEvent`** log scan (default **`1`**). **Do not** set this from `DataMarket.deploymentBlockNumber()` — on **Arbitrum Nitro** that value follows Solidity `block.number` (parent-chain style) and is **not** the same coordinate system as `eth_blockNumber` / `eth_getLogs`. CLI: `--discovery-from-block N` overrides the env. |
 
@@ -101,6 +103,25 @@ The script **does not** compute token amounts or a payout formula. It produces *
 
 4. **Define payout rules off-chain**  
    Examples: proportional to submits, separate weights for submit vs. end-batch, daily caps, inactive-day rules — all applied **outside** this script using CSV/JSONL as inputs.
+
+### Example payout: `build_rewards.py`
+
+`build_rewards.py` is a **sample policy** on top of the reliability table: it splits a fixed daily pool (default **50,000**) evenly among the nodes that were active on each protocol day, then resolves each `node_id` to its on-chain owner via `PowerloomValidatorState.nodeIdToOwner(uint256)`. It is an example — not the canonical reward formula — and requires `analyze_validator_reliability.py` to have produced `out/reliability_by_node_day.csv` first.
+
+```bash
+export POWERLOOM_RPC_URL=https://...
+python export_validator_activity.py --out ./out
+python analyze_validator_reliability.py --data-dir out
+python build_rewards.py --data-dir out
+```
+
+Override the daily pool with `--daily-pool 42000`, or point at a different validator-state contract with `VALIDATOR_STATE_CONTRACT=0x...`.
+
+| File | Format | Contents |
+|------|--------|----------|
+| **`validator_rewards.json`** | JSON | `[{id, owner, daysActive, totalRewards}]` — one row per node, owner resolved on-chain. |
+| **`validator_rewards.csv`** | CSV | Same columns as the JSON, ready to paste into a spreadsheet. |
+| **`daily_rewards.json`** | JSON | `[{day, activeNodes, activeCount, rewardPerNode}]` — one row per protocol day, showing the even-split share for that day. |
 
 ---
 
