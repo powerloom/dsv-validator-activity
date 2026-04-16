@@ -25,6 +25,7 @@ Exports on-chain validator activity from Powerloom L2 using **`DataMarket`** `Da
 | `PROTOCOL_STATE_CONTRACT` | Defaults to `0x1d0e010Ff11b781CA1dE34BD25a0037203e25E2a` (see `localenvs/dsv-mainnet`). |
 | `DATA_MARKET_CONTRACT` | Defaults to `0x26c44e5CcEB7Fe69Cffc933838CF40286b2dc01a`. |
 | `VALIDATOR_STATE_CONTRACT` | Defaults to `0x85573B2CF313315364FB4332f8eabc55321F201A`. Used by `build_rewards.py` to resolve `nodeIdToOwner(uint256)`. |
+| `DISBURSER_PRIVATE_KEY` | Required by `disburse_validator_rewards.py` (unless `--dry-run`). Hex private key of the funded signer that pays out `validator_rewards.json`. Never logged. |
 | `CHAIN_ID` | Optional; if set, compared to `eth_chainId` (sanity check). |
 | `DISCOVERY_FROM_BLOCK` | Optional L2 block to begin **`DayStartedEvent`** log scan (default **`1`**). **Do not** set this from `DataMarket.deploymentBlockNumber()` — on **Arbitrum Nitro** that value follows Solidity `block.number` (parent-chain style) and is **not** the same coordinate system as `eth_blockNumber` / `eth_getLogs`. CLI: `--discovery-from-block N` overrides the env. |
 
@@ -122,6 +123,31 @@ Override the daily pool with `--daily-pool 42000`, or point at a different valid
 | **`validator_rewards.json`** | JSON | `[{id, owner, daysActive, totalRewards}]` — one row per node, owner resolved on-chain. |
 | **`validator_rewards.csv`** | CSV | Same columns as the JSON, ready to paste into a spreadsheet. |
 | **`daily_rewards.json`** | JSON | `[{day, activeNodes, activeCount, rewardPerNode}]` — one row per protocol day, showing the even-split share for that day. |
+
+### Paying out: `disburse_validator_rewards.py`
+
+`disburse_validator_rewards.py` takes `validator_rewards.json` and sends each `owner` their `totalRewards` as **native currency** on Powerloom L2 from a signer loaded from `DISBURSER_PRIVATE_KEY`. It is a one-off payout tool — no distributor contract, no recurring job. `totalRewards` is interpreted as whole native units (1 token = 10^18 wei), converted via `Decimal` → `Web3.to_wei('ether')` to avoid float drift.
+
+```bash
+export POWERLOOM_RPC_URL=https://...
+python disburse_validator_rewards.py --dry-run                     # plan only, no tx
+export DISBURSER_PRIVATE_KEY=0x...                                 # funded signer
+python disburse_validator_rewards.py                               # interactive confirm, then broadcast
+```
+
+CLI flags: `--rewards-file` (default `out/validator_rewards.json`), `--receipts-file` (default `out/disbursement_log.jsonl`), `--dry-run`, `--yes` (skip the interactive confirmation), `--gas-limit` (default `21000`).
+
+Safety behaviors:
+
+- **Pre-flight** prints sender, balance, chain id, per-row `value_wei`, grand total, and gas budget. Aborts if `balance < total + gas_budget`.
+- **Interactive confirmation** requires typing `yes` (bypass with `--yes`, or skip entirely with `--dry-run`).
+- **Idempotent re-run:** every confirmed tx is appended to `disbursement_log.jsonl` with `fsync` immediately after receipt. Re-running skips any `(id, owner)` already logged with `status: 1` — safely resumable after a crash or partial run.
+- **Legacy tx** (`gasPrice = eth.gas_price`, `gas = 21000`), fresh `pending` nonce per iteration, `chainId` from `eth_chainId`.
+- **No auto-retry.** Stops immediately on revert, receipt timeout (180s), or any RPC error and prints a done-vs-remaining summary.
+
+| File | Format | Contents |
+|------|--------|----------|
+| **`disbursement_log.jsonl`** | JSONL | Append-only idempotency ledger. One line per confirmed payout: `{id, owner, amount_wei, tx_hash, block_number, status, chain_id, timestamp}`. |
 
 ---
 
