@@ -1,4 +1,9 @@
 .venv/
 out/
+out*/
 __pycache__
 .DS_Store
+
+# Raw export dumps (JSONL, checkpoints, caches) — keep reports/ only
+out3160/
+*.zip

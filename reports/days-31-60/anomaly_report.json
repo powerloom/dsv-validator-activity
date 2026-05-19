@@ -1,0 +1,33 @@
+{
+  "total_anomalies": 2,
+  "anomalies": [
+    {
+      "day_id": 49,
+      "type": "low_priorities",
+      "value": 6490,
+      "baseline": 7200,
+      "pct_below_baseline": 9.9,
+      "unique_epochs": 6490,
+      "analysis": "Day 49 had only 6490 PrioritiesAssigned (9.9% below 7200 baseline). Likely fewer L2 blocks produced on this day."
+    },
+    {
+      "day_id": 31,
+      "type": "low_completion_rate",
+      "value": 97.46,
+      "network_mean": 99.1,
+      "analysis": "Day 31 completion rate 97.46% is significantly below network mean 99.10%."
+    }
+  ],
+  "network_summary": {
+    "mean_daily_priorities_assigned": 7174.2,
+    "mean_daily_submitted": 7014.6,
+    "mean_daily_completed": 6951.7,
+    "mean_completion_rate_pct": 99.1019,
+    "overall_completion_rate_pct": 99.1033,
+    "completion_trend_first_half": NaN,
+    "completion_trend_second_half": 99.1019,
+    "completion_trend": "stable",
+    "days_with_full_7200_epochs": 28,
+    "days_with_anomaly": 2
+  }
+}

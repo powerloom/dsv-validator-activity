@@ -17,6 +17,34 @@ Exports on-chain validator activity from Powerloom L2 using **`DataMarket`** `Da
 
 **Inline only:** **ValidatorState** (`signerToNodeId`) uses a **minimal ABI** in `export_validator_activity.py` — only that function is needed.
 
+### Published reports (committed)
+
+Verified analysis JSON (no raw JSONL dumps) lives under **[`reports/`](reports/)** — days 1–30, days 31–60, and a combined 60-day summary. See [`reports/README.md`](reports/README.md) for layout and reproduction steps.
+
+### Charts (matplotlib)
+
+Neo-futuristic PNGs for docs/blog live under **`reports/charts/`** (optional commit). Generator: **`generate_visualizations.py`**.
+
+```bash
+pip install -r requirements-viz.txt
+
+# After export + analyzers on ./out (days 1–30)
+python analyze_network_health.py --data-dir out
+python analyze_multikey_nodes.py --data-dir out
+python analyze_epoch_participation.py --data-dir out
+python generate_visualizations.py --data-dir out --day-end 30
+
+# 60-day timeline (merge two export dirs; JSONL stays gitignored)
+python generate_visualizations.py \
+  --data-dir out \
+  --merge-dir ./out-days31-60 \
+  --day-start 1 --day-end 60 \
+  --summary-json reports/combined-days-1-60/summary.json \
+  --charts timeline constellation latency matrix
+```
+
+
+
 ## Environment
 
 | Variable | Description |

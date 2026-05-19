@@ -1,0 +1,53 @@
+{
+  "total_anomalies": 4,
+  "anomalies": [
+    {
+      "day_id": 14,
+      "type": "priorities_assigned_spike",
+      "value": 9918,
+      "baseline": 7200,
+      "delta": 2718,
+      "pct_above_baseline": 37.7,
+      "unique_signers": 14,
+      "baseline_signers": 12,
+      "unique_epochs": 9918,
+      "validator_count": 10,
+      "analysis": "Day 14 had 9918 PrioritiesAssigned (37.7% above 7200 baseline). Unique signers: 14 vs baseline 12. Unique epochs: 9918. This is likely caused by an increased number of epochs in this day (more L2 blocks produced), since validator_count=10 matches the baseline."
+    },
+    {
+      "day_id": 1,
+      "type": "low_priorities",
+      "value": 5802,
+      "baseline": 7200,
+      "pct_below_baseline": 19.4,
+      "unique_epochs": 5802,
+      "analysis": "Day 1 had only 5802 PrioritiesAssigned (19.4% below 7200 baseline). Likely fewer L2 blocks produced on this day."
+    },
+    {
+      "day_id": 8,
+      "type": "validator_count_change",
+      "value": 9,
+      "previous": 10,
+      "analysis": "Validator count changed from 10 to 9 on day 8."
+    },
+    {
+      "day_id": 9,
+      "type": "validator_count_change",
+      "value": 10,
+      "previous": 9,
+      "analysis": "Validator count changed from 9 to 10 on day 9."
+    }
+  ],
+  "network_summary": {
+    "mean_daily_priorities_assigned": 7243.2,
+    "mean_daily_submitted": 7076.6,
+    "mean_daily_completed": 7006.7,
+    "mean_completion_rate_pct": 99.0152,
+    "overall_completion_rate_pct": 99.0122,
+    "completion_trend_first_half": 99.3218,
+    "completion_trend_second_half": 98.7085,
+    "completion_trend": "declining",
+    "days_with_full_7200_epochs": 26,
+    "days_with_anomaly": 4
+  }
+}

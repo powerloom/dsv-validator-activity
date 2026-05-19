@@ -100,7 +100,7 @@ def main() -> None:
         },
     }
 
-    out_path = args.compare_dir / "window_comparison_vs_baseline.json"
+    out_path = args.compare_dir / "window_comparison_vs_days-1-30.json"
     out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 
     print(json.dumps(report, indent=2))

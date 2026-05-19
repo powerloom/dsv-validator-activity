@@ -1,0 +1,26 @@
+{
+  "baseline_dir": "/root/dsv-validator-activity/out",
+  "compare_dir": "/root/dsv-validator-activity/out3160",
+  "baseline": {
+    "epochs_assigned": 217295,
+    "epochs_with_submissions": 212297,
+    "completion_pct": 97.6999,
+    "missed_pct": 2.3001,
+    "median_latency_s": 89.0,
+    "p95_latency_s": 138.0
+  },
+  "compare": {
+    "epochs_assigned": 215226,
+    "epochs_with_submissions": 210430,
+    "completion_pct": 97.7716,
+    "missed_pct": 2.2284,
+    "median_latency_s": 97.0,
+    "p95_latency_s": 155.0
+  },
+  "delta": {
+    "completion_pct_points": 0.0717,
+    "missed_pct_points": -0.0717,
+    "median_latency_s": 8.0,
+    "p95_latency_s": 17.0
+  }
+}

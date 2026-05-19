@@ -1,0 +1,63 @@
+{
+  "title": "BDS DSV mainnet — combined protocol days 1–60",
+  "generated_at": "2026-05-19",
+  "methodology": "On-chain PrioritiesAssigned + SnapshotBatchSubmitted + BatchSubmissionsCompleted via export_validator_activity.py; epoch participation via analyze_epoch_participation.py",
+  "contracts": {
+    "protocol_state": "0x1d0e010Ff11b781CA1dE34BD25a0037203e25E2a",
+    "data_market": "0x26c44e5CcEB7Fe69Cffc933838CF40286b2dc01a",
+    "chain_id": 7869
+  },
+  "windows": {
+    "days_1_30": {
+      "artifact_dir": "../days-1-30",
+      "epochs_assigned": 217295,
+      "epochs_with_submissions": 212297,
+      "missed_epochs": 4998,
+      "missed_pct": 2.3001,
+      "completion_pct": 97.6999,
+      "latency_median_s": 89.0,
+      "latency_mean_s": 88.17,
+      "latency_p95_s": 138.0,
+      "latency_p99_s": 168.0,
+      "days_at_7200_priorities": 26,
+      "anomaly_days": 4
+    },
+    "days_31_60": {
+      "artifact_dir": "../days-31-60",
+      "epochs_assigned": 215226,
+      "epochs_with_submissions": 210430,
+      "missed_epochs": 4796,
+      "missed_pct": 2.2284,
+      "completion_pct": 97.7716,
+      "latency_median_s": 97.0,
+      "latency_mean_s": 97.98,
+      "latency_p95_s": 155.0,
+      "latency_p99_s": 178.0,
+      "days_at_7200_priorities": 28,
+      "short_cadence_days": {
+        "49": 6490,
+        "50": 7136
+      }
+    }
+  },
+  "combined": {
+    "epochs_assigned": 432521,
+    "epochs_with_submissions": 422727,
+    "missed_epochs": 9794,
+    "missed_pct": 2.2644,
+    "completion_pct": 97.7353
+  },
+  "window_delta_days_31_60_vs_1_30": {
+    "completion_pct_points": 0.0717,
+    "missed_pct_points": -0.0717,
+    "median_latency_s": 8.0,
+    "p95_latency_s": 17.0
+  },
+  "reproduce": {
+    "export_days_1_30": "python export_validator_activity.py --out ./out --day-start 1 --day-end 30 --fresh",
+    "export_days_31_60": "python export_validator_activity.py --out ./out-days31-60 --day-start 31 --day-end 60 --fresh",
+    "analyze": "python analyze_epoch_participation.py --data-dir <out-dir>",
+    "reliability": "python analyze_validator_reliability.py --data-dir <out-dir>",
+    "compare": "python compare_windows.py --baseline-dir out --compare-dir out-days31-60"
+  }
+}

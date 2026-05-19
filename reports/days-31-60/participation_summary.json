@@ -1,0 +1,59 @@
+{
+  "total_epochs_assigned": 215226,
+  "epochs_with_submissions": 210430,
+  "epochs_missed_completely": 4796,
+  "missed_pct": 2.2284,
+  "mean_submitters_per_epoch": 0.978,
+  "median_submitters_per_epoch": 1.0,
+  "max_submitters_per_epoch": 1,
+  "submitter_count_histogram": {
+    "0": 4796,
+    "1": 210430
+  },
+  "latency_stats": {
+    "mean_seconds": 97.98,
+    "median_seconds": 97.0,
+    "p95_seconds": 155.0,
+    "p99_seconds": 178.0,
+    "min_seconds": 57,
+    "max_seconds": 194
+  },
+  "per_signer_submission_counts": {
+    "0x09EC56F4cc9236d079E00e024D6e6C7FD75F444f": {
+      "epochs_submitted": 15226
+    },
+    "0x145e38603E2a827711DBdf260925eF75af25DE4b": {
+      "epochs_submitted": 35036
+    },
+    "0x1c211E0237cd78b1dC60e707f8fe54B4ED465BDD": {
+      "epochs_submitted": 15241
+    },
+    "0x2BA6CaEf8d2955E0bC035B6dCc439E589Bb0F389": {
+      "epochs_submitted": 612
+    },
+    "0x4345b6727F4E451e3402105e3F0D5188e8EF35e8": {
+      "epochs_submitted": 11680
+    },
+    "0x54801C1F498F3241787Be1bCE1ddE448B17465fe": {
+      "epochs_submitted": 22739
+    },
+    "0x6938E5D37b476EEB6aB299525c4feB38A10080Cd": {
+      "epochs_submitted": 19914
+    },
+    "0x8448c6bDa727E9A6ebddF3E905A86cE892C5bb3c": {
+      "epochs_submitted": 609
+    },
+    "0x977a0fAadd19c8c2c44562d368574Eb547e0c0d8": {
+      "epochs_submitted": 11731
+    },
+    "0xA4C446BAF14415399F0E41f628C0C06707D73e2a": {
+      "epochs_submitted": 22695
+    },
+    "0xFd09Cd81C6e9d8B1347583fEbcEc1F31C1147354": {
+      "epochs_submitted": 35034
+    },
+    "0xd1e1ca4A3E0f4C52e4C0Faa0E8421A5e72E5d16F": {
+      "epochs_submitted": 19913
+    }
+  }
+}

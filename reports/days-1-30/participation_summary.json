@@ -1,0 +1,77 @@
+{
+  "total_epochs_assigned": 217295,
+  "epochs_with_submissions": 212297,
+  "epochs_missed_completely": 4998,
+  "missed_pct": 2.3001,
+  "mean_submitters_per_epoch": 0.977,
+  "median_submitters_per_epoch": 1.0,
+  "max_submitters_per_epoch": 1,
+  "submitter_count_histogram": {
+    "0": 4998,
+    "1": 212297
+  },
+  "latency_stats": {
+    "mean_seconds": 88.17,
+    "median_seconds": 89.0,
+    "p95_seconds": 138.0,
+    "p99_seconds": 168.0,
+    "min_seconds": 57,
+    "max_seconds": 195
+  },
+  "per_signer_submission_counts": {
+    "0x09EC56F4cc9236d079E00e024D6e6C7FD75F444f": {
+      "epochs_submitted": 16927
+    },
+    "0x145e38603E2a827711DBdf260925eF75af25DE4b": {
+      "epochs_submitted": 24858
+    },
+    "0x1c211E0237cd78b1dC60e707f8fe54B4ED465BDD": {
+      "epochs_submitted": 16900
+    },
+    "0x2BA6CaEf8d2955E0bC035B6dCc439E589Bb0F389": {
+      "epochs_submitted": 4058
+    },
+    "0x4345b6727F4E451e3402105e3F0D5188e8EF35e8": {
+      "epochs_submitted": 12652
+    },
+    "0x54801C1F498F3241787Be1bCE1ddE448B17465fe": {
+      "epochs_submitted": 13610
+    },
+    "0x58c1A249cf96Da45df81D1DbDED018FDbEEE4848": {
+      "epochs_submitted": 13840
+    },
+    "0x6938E5D37b476EEB6aB299525c4feB38A10080Cd": {
+      "epochs_submitted": 14925
+    },
+    "0x7B4C21751023f312e5CCb54Ca580B26ad0177053": {
+      "epochs_submitted": 2373
+    },
+    "0x8448c6bDa727E9A6ebddF3E905A86cE892C5bb3c": {
+      "epochs_submitted": 8055
+    },
+    "0x9276111F914dB521D9d5718A18467D0A06d0d3E5": {
+      "epochs_submitted": 965
+    },
+    "0x977a0fAadd19c8c2c44562d368574Eb547e0c0d8": {
+      "epochs_submitted": 12667
+    },
+    "0x9b49b2598918d11C25349f5072C0d0486eE51Bef": {
+      "epochs_submitted": 13850
+    },
+    "0xA4C446BAF14415399F0E41f628C0C06707D73e2a": {
+      "epochs_submitted": 13642
+    },
+    "0xFd09Cd81C6e9d8B1347583fEbcEc1F31C1147354": {
+      "epochs_submitted": 24859
+    },
+    "0xbc0FaFe7484C849364cDb8F8d999F70e175aD9D9": {
+      "epochs_submitted": 972
+    },
+    "0xd1e1ca4A3E0f4C52e4C0Faa0E8421A5e72E5d16F": {
+      "epochs_submitted": 14745
+    },
+    "0xfF06633b91c791eF94A756609e3474abE4Ad5BD8": {
+      "epochs_submitted": 2399
+    }
+  }
+}

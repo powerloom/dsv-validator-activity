@@ -1,0 +1,163 @@
+{
+  "day_started_event_first_block_by_day": {
+    "2": 3578725,
+    "3": 3634056,
+    "4": 3696025,
+    "5": 3759396,
+    "6": 3831959,
+    "7": 3901920,
+    "8": 3959313,
+    "9": 4018246,
+    "10": 4086624,
+    "11": 4165660,
+    "12": 4247295,
+    "13": 4328793,
+    "14": 4418693,
+    "15": 4547996,
+    "16": 4620701,
+    "17": 4692227,
+    "18": 4764831,
+    "19": 4837090,
+    "20": 4906400,
+    "21": 4972633,
+    "22": 5066105,
+    "23": 5168067,
+    "24": 5271110,
+    "25": 5373427,
+    "26": 5475969,
+    "27": 5578581,
+    "28": 5680865,
+    "29": 5783289,
+    "30": 5881215,
+    "31": 5980715,
+    "32": 6081963,
+    "33": 6180819,
+    "34": 6280360,
+    "35": 6380419,
+    "36": 6480409,
+    "37": 6580717
+  },
+  "intervals_inclusive_days_1_30": {
+    "1": {
+      "block_start": 1,
+      "block_end": 3578724
+    },
+    "2": {
+      "block_start": 3578725,
+      "block_end": 3634055
+    },
+    "3": {
+      "block_start": 3634056,
+      "block_end": 3696024
+    },
+    "4": {
+      "block_start": 3696025,
+      "block_end": 3759395
+    },
+    "5": {
+      "block_start": 3759396,
+      "block_end": 3831958
+    },
+    "6": {
+      "block_start": 3831959,
+      "block_end": 3901919
+    },
+    "7": {
+      "block_start": 3901920,
+      "block_end": 3959312
+    },
+    "8": {
+      "block_start": 3959313,
+      "block_end": 4018245
+    },
+    "9": {
+      "block_start": 4018246,
+      "block_end": 4086623
+    },
+    "10": {
+      "block_start": 4086624,
+      "block_end": 4165659
+    },
+    "11": {
+      "block_start": 4165660,
+      "block_end": 4247294
+    },
+    "12": {
+      "block_start": 4247295,
+      "block_end": 4328792
+    },
+    "13": {
+      "block_start": 4328793,
+      "block_end": 4418692
+    },
+    "14": {
+      "block_start": 4418693,
+      "block_end": 4547995
+    },
+    "15": {
+      "block_start": 4547996,
+      "block_end": 4620700
+    },
+    "16": {
+      "block_start": 4620701,
+      "block_end": 4692226
+    },
+    "17": {
+      "block_start": 4692227,
+      "block_end": 4764830
+    },
+    "18": {
+      "block_start": 4764831,
+      "block_end": 4837089
+    },
+    "19": {
+      "block_start": 4837090,
+      "block_end": 4906399
+    },
+    "20": {
+      "block_start": 4906400,
+      "block_end": 4972632
+    },
+    "21": {
+      "block_start": 4972633,
+      "block_end": 5066104
+    },
+    "22": {
+      "block_start": 5066105,
+      "block_end": 5168066
+    },
+    "23": {
+      "block_start": 5168067,
+      "block_end": 5271109
+    },
+    "24": {
+      "block_start": 5271110,
+      "block_end": 5373426
+    },
+    "25": {
+      "block_start": 5373427,
+      "block_end": 5475968
+    },
+    "26": {
+      "block_start": 5475969,
+      "block_end": 5578580
+    },
+    "27": {
+      "block_start": 5578581,
+      "block_end": 5680864
+    },
+    "28": {
+      "block_start": 5680865,
+      "block_end": 5783288
+    },
+    "29": {
+      "block_start": 5783289,
+      "block_end": 5881214
+    },
+    "30": {
+      "block_start": 5881215,
+      "block_end": 5980714
+    }
+  },
+  "note": "Day boundaries from DataMarket DayStartedEvent (L2 block numbers). If dayId=1 event missing, day 1 starts at L2 block 1 (not deploymentBlockNumber(), which is parent-chain style on Arbitrum Nitro)."
+}
