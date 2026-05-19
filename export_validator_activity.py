@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Export DSV mainnet validator activity for data market days 1–30 using
+Export DSV mainnet validator activity for a configurable protocol day range using
 DayStartedEvent L2 block boundaries (Powerloom L2 archive RPC required).
 
 Supports long runs: checkpoint/resume, incremental JSONL, progress.json.
@@ -98,23 +98,26 @@ def _atomic_write_json(path: Path, obj: Any) -> None:
 
 
 def _build_day_intervals(
+    day_start: int,
+    day_end: int,
     day1_fallback_l2_block: int,
     day_started_blocks: dict[int, int],
     latest_block: int,
 ) -> dict[int, tuple[int, int]]:
     block_start: dict[int, int] = {}
-    if 1 in day_started_blocks:
-        block_start[1] = day_started_blocks[1]
-    else:
-        # On Arbitrum Nitro, DataMarket.deploymentBlockNumber uses Solidity block.number (parent-chain
-        # style), not L2 eth_blockNumber — do not use it as an L2 block bound.
-        block_start[1] = int(day1_fallback_l2_block)
+    if day_start == 1:
+        if 1 in day_started_blocks:
+            block_start[1] = day_started_blocks[1]
+        else:
+            # On Arbitrum Nitro, DataMarket.deploymentBlockNumber uses Solidity block.number (parent-chain
+            # style), not L2 eth_blockNumber — do not use it as an L2 block bound.
+            block_start[1] = int(day1_fallback_l2_block)
 
-    for d in range(2, 32):
+    for d in range(max(2, day_start), day_end + 2):
         if d in day_started_blocks:
             block_start[d] = day_started_blocks[d]
 
-    missing = [d for d in range(2, DAY_END + 1) if d not in block_start]
+    missing = [d for d in range(max(2, day_start), day_end + 1) if d not in block_start]
     if missing:
         raise SystemExit(
             f"Missing DataMarket DayStartedEvent for dayId(s): {missing}. "
@@ -122,7 +125,7 @@ def _build_day_intervals(
         )
 
     intervals: dict[int, tuple[int, int]] = {}
-    for d in range(DAY_START, DAY_END + 1):
+    for d in range(day_start, day_end + 1):
         start = block_start[d]
         nxt = d + 1
         if nxt in block_start:
@@ -135,8 +138,10 @@ def _build_day_intervals(
     return intervals
 
 
-def _block_to_day(intervals: dict[int, tuple[int, int]], block_num: int) -> int | None:
-    for d in range(DAY_START, DAY_END + 1):
+def _block_to_day(
+    intervals: dict[int, tuple[int, int]], block_num: int, day_start: int, day_end: int
+) -> int | None:
+    for d in range(day_start, day_end + 1):
         lo, hi = intervals[d]
         if lo <= block_num <= hi:
             return d
@@ -262,8 +267,24 @@ def _jsonl_first_row_has_key(path: Path, key: str) -> bool:
 
 
 def main() -> None:
-    p = argparse.ArgumentParser(description="DSV validator activity export (days 1–30)")
+    p = argparse.ArgumentParser(
+        description="DSV validator activity export (configurable protocol day range)"
+    )
     p.add_argument("--out", type=Path, default=Path("out"), help="Output directory")
+    p.add_argument(
+        "--day-start",
+        type=int,
+        default=1,
+        metavar="N",
+        help="First protocol day to include (default: 1)",
+    )
+    p.add_argument(
+        "--day-end",
+        type=int,
+        default=30,
+        metavar="N",
+        help="Last protocol day to include (default: 30)",
+    )
     p.add_argument("--chunk-blocks", type=int, default=CHUNK_BLOCKS)
     p.add_argument(
         "--resume",
@@ -285,6 +306,10 @@ def main() -> None:
     )
     args = p.parse_args()
     chunk = max(500, args.chunk_blocks)
+
+    global DAY_START, DAY_END
+    DAY_START = max(1, int(args.day_start))
+    DAY_END = max(DAY_START, int(args.day_end))
 
     rpc = os.environ.get("POWERLOOM_RPC_URL", "").strip()
     if not rpc:
@@ -471,24 +496,27 @@ def main() -> None:
             },
         )
 
-    intervals = _build_day_intervals(1, day_started_blocks, latest)
+    intervals = _build_day_intervals(DAY_START, DAY_END, 1, day_started_blocks, latest)
 
     boundaries = {
         str(d): {"block_start": intervals[d][0], "block_end": intervals[d][1]}
         for d in range(DAY_START, DAY_END + 1)
     }
-    _atomic_write_json(
-        out_dir / "day_boundaries.json",
-        {
-            "day_started_event_first_block_by_day": {str(k): v for k, v in sorted(day_started_blocks.items())},
-            "intervals_inclusive_days_1_30": boundaries,
-            "note": (
-                "Day boundaries from DataMarket DayStartedEvent (L2 block numbers). "
-                "If dayId=1 event missing, day 1 starts at L2 block 1 (not deploymentBlockNumber(), "
-                "which is parent-chain style on Arbitrum Nitro)."
-            ),
-        },
-    )
+    intervals_key = f"intervals_inclusive_days_{DAY_START}_{DAY_END}"
+    day_boundaries_doc: dict[str, Any] = {
+        "day_started_event_first_block_by_day": {str(k): v for k, v in sorted(day_started_blocks.items())},
+        intervals_key: boundaries,
+        "day_start": DAY_START,
+        "day_end": DAY_END,
+        "note": (
+            "Day boundaries from DataMarket DayStartedEvent (L2 block numbers). "
+            "If dayId=1 event missing, day 1 starts at L2 block 1 (not deploymentBlockNumber(), "
+            "which is parent-chain style on Arbitrum Nitro)."
+        ),
+    }
+    if DAY_START == 1 and DAY_END == 30:
+        day_boundaries_doc["intervals_inclusive_days_1_30"] = boundaries
+    _atomic_write_json(out_dir / "day_boundaries.json", day_boundaries_doc)
 
     global_from = intervals[DAY_START][0]
     global_to = intervals[DAY_END][1]
@@ -590,7 +618,7 @@ def main() -> None:
                 "block_number": bn,
                 "tx_hash": log["transactionHash"].hex(),
                 "log_index": int(log["logIndex"]),
-                "day_id": _block_to_day(iv, bn),
+                "day_id": _block_to_day(iv, bn, DAY_START, DAY_END),
                 "epoch_id": int(a["epochId"]),
                 "validator_count": int(a["validatorCount"]),
                 "seed": str(a["seed"]),
@@ -616,7 +644,7 @@ def main() -> None:
                 "block_number": bn,
                 "tx_hash": log["transactionHash"].hex(),
                 "log_index": int(log["logIndex"]),
-                "day_id": _block_to_day(iv, bn),
+                "day_id": _block_to_day(iv, bn, DAY_START, DAY_END),
                 "epoch_id": int(a["epochId"]),
                 "batch_cid": a["batchCid"],
                 "timestamp": int(a["timestamp"]),
@@ -641,7 +669,7 @@ def main() -> None:
                 "block_number": bn,
                 "tx_hash": log["transactionHash"].hex(),
                 "log_index": int(log["logIndex"]),
-                "day_id": _block_to_day(iv, bn),
+                "day_id": _block_to_day(iv, bn, DAY_START, DAY_END),
                 "epoch_id": int(a["epochId"]),
                 "timestamp": int(a["timestamp"]),
             }

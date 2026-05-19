@@ -1,4 +1,4 @@
-# DSV mainnet: validator activity export (days 1–30)
+# DSV mainnet: validator activity export (configurable day range)
 
 Exports on-chain validator activity from Powerloom L2 using **`DataMarket`** `DayStartedEvent` block boundaries (see workspace plan). Day discovery does **not** use `ProtocolState` for `DayStartedEvent` — the canonical emit for epoch/day advances is on the **data market** contract (watchers and on-chain reward flows index that address).
 
@@ -37,6 +37,16 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 export POWERLOOM_RPC_URL=https://...
 python export_validator_activity.py --out ./out
+```
+
+**Day 31–60 window** (after the initial days 1–30 export):
+
+```bash
+# Use a separate output dir; optional: set discovery near day 30 end from out/day_boundaries.json
+python export_validator_activity.py --out ./out-days31-60 --day-start 31 --day-end 60 --fresh
+python analyze_epoch_participation.py --data-dir out-days31-60
+python analyze_validator_reliability.py --data-dir out-days31-60
+python compare_windows.py --baseline-dir out --compare-dir out-days31-60
 ```
 
 **First run** uses an empty `--out` (no `export_state.json`). If a previous run left a checkpoint there, you must pass **`--resume`** to continue or **`--fresh`** to delete checkpoint + partial outputs and start over.
