@@ -41,6 +41,15 @@ python generate_visualizations.py \
   --day-start 1 --day-end 60 \
   --summary-json reports/combined-days-1-60/summary.json \
   --charts timeline constellation latency matrix
+
+# 90-day timeline (--merge-dir is repeatable across windows)
+python generate_visualizations.py \
+  --data-dir out \
+  --merge-dir ./out-days31-60 \
+  --merge-dir ./out-days61-90 \
+  --day-start 1 --day-end 90 \
+  --summary-json reports/combined-days-1-90/summary.json \
+  --charts timeline constellation latency matrix
 ```
 
 
@@ -76,6 +85,18 @@ python analyze_epoch_participation.py --data-dir out-days31-60
 python analyze_validator_reliability.py --data-dir out-days31-60
 python compare_windows.py --baseline-dir out --compare-dir out-days31-60
 ```
+
+**Day 61–90 window** (after days 31–60). Seed discovery near the prior day-60 boundary to skip re-scanning early L2 blocks (read `block_end` for day 60 from the 31–60 `day_boundaries.json`):
+
+```bash
+python export_validator_activity.py --out ./out-days61-90 --day-start 61 --day-end 90 \
+  --discovery-from-block <day60_block_end+1> --fresh
+python analyze_epoch_participation.py --data-dir out-days61-90
+python analyze_validator_reliability.py --data-dir out-days61-90
+python compare_windows.py --baseline-dir out-days31-60 --compare-dir out-days61-90
+```
+
+Boundaries land under `intervals_inclusive_days_61_90` in `day_boundaries.json`.
 
 **First run** uses an empty `--out` (no `export_state.json`). If a previous run left a checkpoint there, you must pass **`--resume`** to continue or **`--fresh`** to delete checkpoint + partial outputs and start over.
 

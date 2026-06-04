@@ -520,8 +520,9 @@ def parse_args() -> argparse.Namespace:
     p.add_argument(
         "--merge-dir",
         type=Path,
+        action="append",
         default=None,
-        help="Second export dir to merge (e.g. out-days31-60 with --data-dir out for days 1-30)",
+        help="Export dir(s) to merge with --data-dir. Repeatable: e.g. --merge-dir out-days31-60 --merge-dir out-days61-90 for a 1-90 timeline.",
     )
     p.add_argument(
         "--summary-json",
@@ -549,7 +550,7 @@ def main() -> None:
     args = parse_args()
     data_dirs = [args.data_dir.resolve()]
     if args.merge_dir:
-        data_dirs.append(args.merge_dir.resolve())
+        data_dirs.extend(d.resolve() for d in args.merge_dir)
 
     out_dir = args.out_dir.resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
