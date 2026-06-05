@@ -1,0 +1,84 @@
+{
+  "title": "BDS DSV mainnet — combined protocol days 1–90",
+  "generated_at": "2026-06-05",
+  "methodology": "On-chain PrioritiesAssigned + SnapshotBatchSubmitted + BatchSubmissionsCompleted via export_validator_activity.py; epoch participation via analyze_epoch_participation.py",
+  "contracts": {
+    "protocol_state": "0x1d0e010Ff11b781CA1dE34BD25a0037203e25E2a",
+    "data_market": "0x26c44e5CcEB7Fe69Cffc933838CF40286b2dc01a",
+    "chain_id": 7869
+  },
+  "windows": {
+    "days_1_30": {
+      "artifact_dir": "../days-1-30",
+      "epochs_assigned": 217295,
+      "epochs_with_submissions": 212297,
+      "missed_epochs": 4998,
+      "missed_pct": 2.3001,
+      "completion_pct": 97.6999,
+      "latency_median_s": 89.0,
+      "latency_mean_s": 88.17,
+      "latency_p95_s": 138.0,
+      "latency_p99_s": 168.0,
+      "days_at_7200_priorities": 26,
+      "anomaly_days": 4
+    },
+    "days_31_60": {
+      "artifact_dir": "../days-31-60",
+      "epochs_assigned": 215226,
+      "epochs_with_submissions": 210430,
+      "missed_epochs": 4796,
+      "missed_pct": 2.2284,
+      "completion_pct": 97.7716,
+      "latency_median_s": 97.0,
+      "latency_mean_s": 97.98,
+      "latency_p95_s": 155.0,
+      "latency_p99_s": 178.0,
+      "days_at_7200_priorities": 28,
+      "short_cadence_days": {
+        "49": 6490,
+        "50": 7136
+      }
+    },
+    "days_61_90": {
+      "artifact_dir": "../days-61-90",
+      "epochs_assigned": 215991,
+      "epochs_with_submissions": 204416,
+      "missed_epochs": 11575,
+      "missed_pct": 5.359,
+      "completion_pct": 94.641,
+      "latency_median_s": 97.0,
+      "latency_mean_s": 98.21,
+      "latency_p95_s": 160.0,
+      "latency_p99_s": 177.0,
+      "days_at_7200_priorities": 29,
+      "short_cadence_days": {
+        "82": 7191
+      },
+      "anomaly_days": 1,
+      "note": "Coverage regression concentrated in the tail (days 83-90): daily SnapshotBatchSubmitted fell to ~5,900-6,150 of 7,200 vs ~7,000-7,145 early in the window. Validator count dropped 10 -> 9 on day 71.",
+      "root_cause": "Infrastructure, not validator set: a bootstrap-node resource (memory) leak plus a libp2p host misconfiguration degraded gossipsub mesh stability, so connected validators could not reliably propagate/receive finalization submissions for assigned epochs. Per-node activity swings in this window are symptoms of mesh instability, not operator decommissions. Remediation (bootstrap memory-leak fix + corrected libp2p host config) deployed 2026-06-04, after day 90; recovery is expected to show in the days 91+ window."
+    }
+  },
+  "combined": {
+    "epochs_assigned": 648512,
+    "epochs_with_submissions": 627143,
+    "missed_epochs": 21369,
+    "missed_pct": 3.2951,
+    "completion_pct": 96.7049
+  },
+  "window_delta_days_61_90_vs_31_60": {
+    "completion_pct_points": -3.1306,
+    "missed_pct_points": 3.1306,
+    "median_latency_s": 0.0,
+    "p95_latency_s": 5.0
+  },
+  "reproduce": {
+    "export_days_1_30": "python export_validator_activity.py --out ./out --day-start 1 --day-end 30 --fresh",
+    "export_days_31_60": "python export_validator_activity.py --out ./out-days31-60 --day-start 31 --day-end 60 --fresh",
+    "export_days_61_90": "python export_validator_activity.py --out ./out-days61-90 --day-start 61 --day-end 90 --discovery-from-block 9032672 --fresh",
+    "analyze": "python analyze_epoch_participation.py --data-dir <out-dir>",
+    "reliability": "python analyze_validator_reliability.py --data-dir <out-dir>",
+    "compare_31_60": "python compare_windows.py --baseline-dir out --compare-dir out-days31-60",
+    "compare_61_90": "python compare_windows.py --baseline-dir reports/days-31-60 --compare-dir out-days61-90 --baseline-label days-31-60"
+  }
+}

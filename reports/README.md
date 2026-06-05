@@ -8,9 +8,9 @@ Committed **analysis outputs only** — not raw `eth_getLogs` dumps. Anyone can 
 |------|---------------|----------|
 | [`days-1-30/`](days-1-30/) | 1–30 | `participation_summary.json`, `reliability_summary.json`, `metrics_summary.json`, `anomaly_report.json`, `day_boundaries.json`, `addresses_resolved.json` |
 | [`days-31-60/`](days-31-60/) | 31–60 | Same (no anomaly report for this window yet), plus `window_comparison_vs_days-1-30.json` |
-| [`days-61-90/`](days-61-90/) | 61–90 | Same set, plus `window_comparison_vs_days-31-60.json` (commit after the VPS export lands) |
+| [`days-61-90/`](days-61-90/) | 61–90 | Same set, plus `window_comparison_vs_days-31-60.json`. Coverage dipped to 94.64% (tail days 83–90). |
 | [`combined-days-1-60/summary.json`](combined-days-1-60/summary.json) | 1–60 | Rolled-up metrics and reproduction commands |
-| [`combined-days-1-90/summary.json`](combined-days-1-90/summary.json) | 1–90 | Rolled-up 90-day metrics (refactor of the 1–60 summary; add once 61–90 is exported) |
+| [`combined-days-1-90/summary.json`](combined-days-1-90/summary.json) | 1–90 | Rolled-up 90-day metrics (648,512 assigned / 96.70% completion) |
 | [`charts/`](charts/) | — | PNG outputs from `generate_visualizations.py` (commit after regen) |
 
 ## Reproduce from scratch
@@ -44,7 +44,7 @@ python analyze_epoch_participation.py --data-dir out-days61-90
 python analyze_validator_reliability.py --data-dir out-days61-90
 python analyze_network_health.py --data-dir out-days61-90
 python analyze_multikey_nodes.py --data-dir out-days61-90
-python compare_windows.py --baseline-dir out-days31-60 --compare-dir out-days61-90
+python compare_windows.py --baseline-dir out-days31-60 --compare-dir out-days61-90 --baseline-label days-31-60
 
 # Diff your outputs against this directory:
 diff reports/days-1-30/participation_summary.json out/participation_summary.json
@@ -78,13 +78,15 @@ python generate_visualizations.py \
   --day-start 1 --day-end 60 \
   --summary-json reports/combined-days-1-60/summary.json
 
-# Full 90-day timeline (--merge-dir is repeatable)
+# Full 90-day timeline (--merge-dir is repeatable). Use a suffix so it
+# does not overwrite the days 1-30 base chart (dsv_network_health_timeline.png).
 python generate_visualizations.py \
   --data-dir out \
   --merge-dir out-days31-60 \
   --merge-dir out-days61-90 \
   --day-start 1 --day-end 90 \
-  --summary-json reports/combined-days-1-90/summary.json
+  --summary-json reports/combined-days-1-90/summary.json \
+  --filename-suffix _days_1_90 --charts timeline
 
 # Slot radial (needs tally JSON; workspace path or --tally-dir)
 python generate_visualizations.py --data-dir out --charts slots \
@@ -98,6 +100,7 @@ Outputs:
 | `dsv_network_health_timeline.png` | `network_health_daily.csv` (days 1–30) |
 | `dsv_network_health_timeline_days_31_60.png` | `network_health_daily.csv` (days 31–60) |
 | `dsv_network_health_timeline_days_61_90.png` | `network_health_daily.csv` (days 61–90) |
+| `dsv_network_health_timeline_days_1_90.png` | merged `network_health_daily.csv` (days 1–90); stats box from `combined-days-1-90/summary.json` |
 | `dsv_validator_constellation.png` | `node_aggregate_metrics.csv` |
 | `dsv_latency_heatmap.png` | `submission_latency.csv` |
 | `dsv_epoch_coverage_matrix.png` | `epoch_participation.csv` |
@@ -115,4 +118,4 @@ Copy PNGs to docs: `powerloom-docs/static/images/bds-agentic-workflow/dsv-mainne
 
 Public narrative: [Stability and Scale](https://docs.powerloom.io/docs/dsv-mainnet/stability-and-scale) (references these artifacts).
 
-Last published: **2026-05-19** (days 31–60 analysis + chart tooling in-repo).
+Last published: **2026-06-05** (days 61–90 analysis + combined 1–90 summary).

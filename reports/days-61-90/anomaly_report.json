@@ -1,0 +1,24 @@
+{
+  "total_anomalies": 1,
+  "anomalies": [
+    {
+      "day_id": 71,
+      "type": "validator_count_change",
+      "value": 9,
+      "previous": 10,
+      "analysis": "Validator count changed from 10 to 9 on day 71."
+    }
+  ],
+  "network_summary": {
+    "mean_daily_priorities_assigned": 7199.7,
+    "mean_daily_submitted": 6814.1,
+    "mean_daily_completed": 6754.7,
+    "mean_completion_rate_pct": 99.1204,
+    "overall_completion_rate_pct": 99.1278,
+    "completion_trend_first_half": NaN,
+    "completion_trend_second_half": 99.1204,
+    "completion_trend": "stable",
+    "days_with_full_7200_epochs": 29,
+    "days_with_anomaly": 1
+  }
+}

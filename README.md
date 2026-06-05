@@ -42,14 +42,15 @@ python generate_visualizations.py \
   --summary-json reports/combined-days-1-60/summary.json \
   --charts timeline constellation latency matrix
 
-# 90-day timeline (--merge-dir is repeatable across windows)
+# 90-day timeline (--merge-dir is repeatable across windows).
+# --filename-suffix avoids overwriting the days 1-30 base PNG.
 python generate_visualizations.py \
   --data-dir out \
   --merge-dir ./out-days31-60 \
   --merge-dir ./out-days61-90 \
   --day-start 1 --day-end 90 \
   --summary-json reports/combined-days-1-90/summary.json \
-  --charts timeline constellation latency matrix
+  --filename-suffix _days_1_90 --charts timeline constellation latency matrix
 ```
 
 
@@ -93,10 +94,10 @@ python export_validator_activity.py --out ./out-days61-90 --day-start 61 --day-e
   --discovery-from-block <day60_block_end+1> --fresh
 python analyze_epoch_participation.py --data-dir out-days61-90
 python analyze_validator_reliability.py --data-dir out-days61-90
-python compare_windows.py --baseline-dir out-days31-60 --compare-dir out-days61-90
+python compare_windows.py --baseline-dir out-days31-60 --compare-dir out-days61-90 --baseline-label days-31-60
 ```
 
-Boundaries land under `intervals_inclusive_days_61_90` in `day_boundaries.json`.
+`--baseline-label` controls the comparison filename (`window_comparison_vs_days-31-60.json`); without it the file defaults to `...vs_days-1-30.json` regardless of the actual baseline. Boundaries land under `intervals_inclusive_days_61_90` in `day_boundaries.json`.
 
 **First run** uses an empty `--out` (no `export_state.json`). If a previous run left a checkpoint there, you must pass **`--resume`** to continue or **`--fresh`** to delete checkpoint + partial outputs and start over.
 

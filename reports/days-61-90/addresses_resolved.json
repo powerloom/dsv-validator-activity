@@ -1,0 +1,10 @@
+{
+  "chain_id": 7869,
+  "protocol_state": "0x1d0e010Ff11b781CA1dE34BD25a0037203e25E2a",
+  "data_market": "0x26c44e5CcEB7Fe69Cffc933838CF40286b2dc01a",
+  "validator_priority_assigner": "0xA8e91B4dCa2f8B3Caab45EE50b6076200d0f97AE",
+  "validator_state": "0x85573B2CF313315364FB4332f8eabc55321F201A",
+  "deployment_block_number": 24521654,
+  "deployment_block_number_note": "Solidity block.number at DataMarket deploy (parent-chain style on Arbitrum Nitro; not comparable to eth_blockNumber or eth_getLogs block tags, which are L2 blocks).",
+  "day_started_discovery_from_l2_block": 9032672
+}

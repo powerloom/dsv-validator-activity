@@ -163,6 +163,22 @@ def load_validator_data(
     if summary_path and summary_path.is_file():
         with open(summary_path, encoding="utf-8") as f:
             summary = json.load(f)
+        # combined-days-* summaries nest rollups under "combined"/"windows";
+        # normalize to the flat keys the timeline stats box expects.
+        if "total_epochs_assigned" not in summary and "combined" in summary:
+            combined = summary["combined"]
+            windows = summary.get("windows", {})
+            last_window = list(windows.values())[-1] if windows else {}
+            summary = {
+                "total_epochs_assigned": combined.get("epochs_assigned", 0),
+                "epochs_with_submissions": combined.get("epochs_with_submissions", 0),
+                "epochs_missed_completely": combined.get("missed_epochs", 0),
+                "missed_pct": combined.get("missed_pct", 0),
+                "latency_stats": {
+                    "median_seconds": last_window.get("latency_median_s", 0),
+                    "p95_seconds": last_window.get("latency_p95_s", 0),
+                },
+            }
     else:
         with open(data_dirs[-1] / "participation_summary.json", encoding="utf-8") as f:
             summary = json.load(f)

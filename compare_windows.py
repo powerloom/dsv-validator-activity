@@ -36,6 +36,12 @@ def main() -> None:
         required=True,
         help="Later window (e.g. days 31-60 export)",
     )
+    p.add_argument(
+        "--baseline-label",
+        default="days-1-30",
+        help="Label for the baseline window used in the output filename "
+        "(window_comparison_vs_<label>.json). E.g. days-31-60.",
+    )
     args = p.parse_args()
 
     base_path = args.baseline_dir / "participation_summary.json"
@@ -100,7 +106,7 @@ def main() -> None:
         },
     }
 
-    out_path = args.compare_dir / "window_comparison_vs_days-1-30.json"
+    out_path = args.compare_dir / f"window_comparison_vs_{args.baseline_label}.json"
     out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 
     print(json.dumps(report, indent=2))
